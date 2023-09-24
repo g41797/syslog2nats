@@ -46,7 +46,9 @@ func ConfFact() sputnik.ConfFactory {
 	return sidecar.ConfigFactory(CONFPATH)
 }
 
-func NewServerConnection() sputnik.ServerConnection {
+// connector always returns shared connection
+// for usage this connection with tests we need more flexible approach
+func NewServerConnection(shared bool) sputnik.ServerConnection {
 	cntr := newConnector()
 
 	scn, err := cntr.Connect(ConfFact())
@@ -55,8 +57,8 @@ func NewServerConnection() sputnik.ServerConnection {
 		return nil
 	}
 
-	nonshared := scn.(natsConnection)
-	nonshared.shared = false
+	nonshared := scn.(*natsConnection)
+	nonshared.shared = shared
 
 	return nonshared
 }

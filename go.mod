@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/g41797/sputnik v0.0.13
+	github.com/g41797/syslogsidecar v0.0.7
 	github.com/nats-io/nats-server/v2 v2.10.1
 	github.com/nats-io/nats.go v1.30.0
 )
@@ -26,5 +27,6 @@ require (
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
+	gopkg.in/mcuadros/go-syslog.v2 v2.3.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
