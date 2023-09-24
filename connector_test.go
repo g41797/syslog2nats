@@ -2,10 +2,6 @@ package syslog2nats
 
 import (
 	"testing"
-
-	_ "github.com/nats-io/nats-server/v2/server"
-	_ "github.com/nats-io/nats.go"
-	_ "github.com/nats-io/nats.go/jetstream"
 )
 
 func TestRunNATS(t *testing.T) {
@@ -38,5 +34,4 @@ func TestConnect(t *testing.T) {
 	if !connected {
 		t.Fatalf("should be connected")
 	}
-
 }

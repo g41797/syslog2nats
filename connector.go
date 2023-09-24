@@ -3,7 +3,6 @@ package syslog2nats
 import (
 	"github.com/g41797/sputnik"
 	"github.com/nats-io/nats.go"
-	_ "github.com/nats-io/nats.go/jetstream"
 )
 
 const connectorConfName = "connector"

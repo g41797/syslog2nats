@@ -45,3 +45,18 @@ func shutdownJSServerAndRemoveStorage(t *testing.T, s *server.Server) {
 func ConfFact() sputnik.ConfFactory {
 	return sidecar.ConfigFactory(CONFPATH)
 }
+
+func NewServerConnection() sputnik.ServerConnection {
+	cntr := newConnector()
+
+	scn, err := cntr.Connect(ConfFact())
+
+	if err != nil {
+		return nil
+	}
+
+	nonshared := scn.(natsConnection)
+	nonshared.shared = false
+
+	return nonshared
+}
