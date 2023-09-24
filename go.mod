@@ -1,6 +1,6 @@
 module github.com/g41797/syslog2nats
 
-go 1.19
+go 1.20
 
 require (
 	github.com/g41797/sputnik v0.0.13
