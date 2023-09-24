@@ -62,3 +62,25 @@ func NewServerConnection(shared bool) sputnik.ServerConnection {
 
 	return nonshared
 }
+
+var _ sputnik.BlockCommunicator = &dumbCommunicator{}
+
+type dumbCommunicator struct {
+	msgs chan sputnik.Msg
+}
+
+func newCommunicator() *dumbCommunicator {
+	return &dumbCommunicator{msgs: make(chan sputnik.Msg, 1)}
+}
+
+func (c *dumbCommunicator) Communicator(resp string) (bc sputnik.BlockCommunicator, exists bool) {
+	return nil, false
+}
+
+func (c *dumbCommunicator) Descriptor() sputnik.BlockDescriptor {
+	return sputnik.BlockDescriptor{}
+}
+func (c *dumbCommunicator) Send(msg sputnik.Msg) bool {
+	c.msgs <- msg
+	return true
+}

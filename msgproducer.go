@@ -26,6 +26,8 @@ func newMsgProducer() sidecar.MessageProducer {
 	return &msgProducer{}
 }
 
+var _ sidecar.MessageProducer = &msgProducer{}
+
 type msgProducer struct {
 	conf MsgPrdConfig
 	sc   *natsConnection
@@ -131,3 +133,10 @@ func (mpr *msgProducer) convertProduceMsg(inmsg sputnik.Msg) *nats.Msg {
 
 	return msg
 }
+
+// var _ sidecar.MessageConsumer = &msgProducer{}
+
+// func (cons *msgProducer) Consume(sender sputnik.BlockCommunicator) error {
+
+// 	return nil
+// }
