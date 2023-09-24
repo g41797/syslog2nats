@@ -2,11 +2,13 @@ package syslog2nats
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/g41797/sputnik"
 	"github.com/g41797/sputnik/sidecar"
 	"github.com/g41797/syslogsidecar"
+	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 )
 
@@ -28,6 +30,7 @@ type msgProducer struct {
 	conf MsgPrdConfig
 	sc   *natsConnection
 	js   jetstream.JetStream
+	ctx  context.Context
 }
 
 func (mpr *msgProducer) Connect(cf sputnik.ConfFactory, scn sputnik.ServerConnection) error {
@@ -50,6 +53,7 @@ func (mpr *msgProducer) Connect(cf sputnik.ConfFactory, scn sputnik.ServerConnec
 	}
 	mpr.sc = sc
 	mpr.js = js
+	mpr.ctx = ctx
 	return nil
 }
 
@@ -73,39 +77,57 @@ func (mpr *msgProducer) Disconnect() {
 }
 
 func (mpr *msgProducer) Produce(msg sputnik.Msg) error {
-	/*
-		if mpr.mc == nil {
-			return fmt.Errorf("connection with broker does not exist")
-		}
 
-		if !mpr.mc.IsConnected() {
-			return fmt.Errorf("does not connected with broker")
-		}
+	if mpr.sc == nil {
+		return fmt.Errorf("connection with broker does not exist")
+	}
 
-		hdrs := memphis.Headers{}
-		hdrs.New()
+	if mpr.sc.nc == nil {
+		return fmt.Errorf("connection with broker does not exist")
+	}
 
-		for k, v := range msg {
-			vstr, ok := v.(string)
-			if !ok {
-				continue
-			}
-			if err := hdrs.Add(k, vstr); err != nil {
-				return err
-			}
-		}
+	if !mpr.sc.nc.IsConnected() {
+		return fmt.Errorf("does not connected with broker")
+	}
 
-		err := mpr.producer.Produce("", memphis.MsgHeaders(hdrs))
+	natsmsg := mpr.convertProduceMsg(msg)
 
-		return err
-	*/
-	return nil
+	_, err := mpr.js.PublishMsgAsync(natsmsg)
+
+	return err
+
 }
 
-func (mpr *msgProducer) waitAsyncProduce(to time.Duration) {
+func (mpr *msgProducer) waitAsyncProduce(to time.Duration) bool {
 	select {
 	case <-mpr.js.PublishAsyncComplete():
+		return true
 	case <-time.After(to):
-		return
+		return false
 	}
+}
+
+func (mpr *msgProducer) convertProduceMsg(inmsg sputnik.Msg) *nats.Msg {
+	msg := &nats.Msg{
+		Subject: mpr.conf.STREAM,
+		Header:  make(nats.Header),
+	}
+
+	if inmsg == nil {
+		return msg
+	}
+
+	if len(inmsg) == 0 {
+		return msg
+	}
+
+	for k, v := range inmsg {
+		vstr, ok := v.(string)
+		if !ok {
+			continue
+		}
+		msg.Header.Add(k, vstr)
+	}
+
+	return msg
 }

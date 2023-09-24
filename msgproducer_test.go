@@ -1,6 +1,11 @@
 package syslog2nats
 
-import "testing"
+import (
+	"testing"
+	"time"
+
+	"github.com/g41797/sputnik"
+)
 
 func TestProduce(t *testing.T) {
 	srv := RunBasicJetStreamServer(NATSPORT)
@@ -9,11 +14,23 @@ func TestProduce(t *testing.T) {
 	}
 	defer shutdownJSServerAndRemoveStorage(t, srv)
 
-	mp := newMsgProducer()
+	var mp msgProducer
 
 	err := mp.Connect(ConfFact(), NewServerConnection(false))
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	pmsg := make(sputnik.Msg)
+	pmsg["content"] = "content"
+
+	err = mp.Produce(pmsg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !mp.waitAsyncProduce(time.Second) {
+		t.Fatalf("timeout of produce")
 	}
 
 	defer mp.Disconnect()
