@@ -13,7 +13,7 @@ type brokerConnConfig struct {
 
 var _ sputnik.ServerConnector = &natsConnector{}
 
-func newConnector() sputnik.ServerConnector {
+func NewConnector() sputnik.ServerConnector {
 	return new(natsConnector)
 }
 

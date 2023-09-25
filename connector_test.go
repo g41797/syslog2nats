@@ -19,7 +19,7 @@ func TestConnect(t *testing.T) {
 	}
 	defer shutdownJSServerAndRemoveStorage(t, srv)
 
-	cntr := newConnector()
+	cntr := NewConnector()
 
 	defer cntr.Disconnect()
 
