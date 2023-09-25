@@ -10,6 +10,9 @@ require (
 )
 
 require (
+	github.com/RackSec/srslog v0.0.0-20180709174129-a4725f04ec91 // indirect
+	github.com/RoaringBitmap/roaring v1.5.0 // indirect
+	github.com/bits-and-blooms/bitset v1.2.0 // indirect
 	github.com/g41797/gonfig v1.0.1 // indirect
 	github.com/g41797/kissngoqueue v0.1.5 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
@@ -17,6 +20,7 @@ require (
 	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/minio/highwayhash v1.0.2 // indirect
+	github.com/mschoch/smat v0.2.0 // indirect
 	github.com/nats-io/jwt/v2 v2.5.2 // indirect
 	github.com/nats-io/nkeys v0.4.5 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect

@@ -30,7 +30,7 @@ var _ sidecar.MessageProducer = &msgProducer{}
 
 type msgProducer struct {
 	conf MsgPrdConfig
-	sc   *natsConnection
+	sc   *NatsConnection
 	js   jetstream.JetStream
 	ctx  context.Context
 }
@@ -41,9 +41,9 @@ func (mpr *msgProducer) Connect(cf sputnik.ConfFactory, scn sputnik.ServerConnec
 		return err
 	}
 
-	sc := scn.(*natsConnection)
+	sc := scn.(*NatsConnection)
 
-	js, err := jetstream.New(sc.nc)
+	js, err := jetstream.New(sc.NatsConn)
 	if err != nil {
 		return err
 	}
@@ -68,12 +68,12 @@ func (mpr *msgProducer) Disconnect() {
 		mpr.waitAsyncProduce(time.Second)
 	}
 
-	if mpr.sc.shared {
+	if mpr.sc.Shared {
 		mpr.sc = nil
 		return
 	}
 
-	mpr.sc.nc.Close()
+	mpr.sc.NatsConn.Close()
 	mpr.sc = nil
 	return
 }
@@ -84,15 +84,19 @@ func (mpr *msgProducer) Produce(msg sputnik.Msg) error {
 		return fmt.Errorf("connection with broker does not exist")
 	}
 
-	if mpr.sc.nc == nil {
+	if mpr.sc.NatsConn == nil {
 		return fmt.Errorf("connection with broker does not exist")
 	}
 
-	if !mpr.sc.nc.IsConnected() {
+	if !mpr.sc.NatsConn.IsConnected() {
 		return fmt.Errorf("does not connected with broker")
 	}
 
-	natsmsg := mpr.convertProduceMsg(msg)
+	natsmsg := ConvertProduceMsg(mpr.conf.STREAM, msg)
+
+	if natsmsg == nil {
+		return nil
+	}
 
 	_, err := mpr.js.PublishMsgAsync(natsmsg)
 
@@ -109,9 +113,9 @@ func (mpr *msgProducer) waitAsyncProduce(to time.Duration) bool {
 	}
 }
 
-func (mpr *msgProducer) convertProduceMsg(inmsg sputnik.Msg) *nats.Msg {
+func ConvertProduceMsg(name string, inmsg sputnik.Msg) *nats.Msg {
 	msg := &nats.Msg{
-		Subject: mpr.conf.STREAM,
+		Subject: name,
 		Header:  make(nats.Header),
 	}
 
@@ -133,10 +137,3 @@ func (mpr *msgProducer) convertProduceMsg(inmsg sputnik.Msg) *nats.Msg {
 
 	return msg
 }
-
-// var _ sidecar.MessageConsumer = &msgProducer{}
-
-// func (cons *msgProducer) Consume(sender sputnik.BlockCommunicator) error {
-
-// 	return nil
-// }

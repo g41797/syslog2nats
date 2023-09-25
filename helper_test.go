@@ -3,6 +3,7 @@ package syslog2nats
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/g41797/sputnik"
 	"github.com/g41797/sputnik/sidecar"
@@ -46,9 +47,9 @@ func ConfFact() sputnik.ConfFactory {
 	return sidecar.ConfigFactory(CONFPATH)
 }
 
-// connector always returns shared connection
+// connector always returns Shared connection
 // for usage this connection with tests we need more flexible approach
-func NewServerConnection(shared bool) sputnik.ServerConnection {
+func NewServerConnection(Shared bool) sputnik.ServerConnection {
 	cntr := newConnector()
 
 	scn, err := cntr.Connect(ConfFact())
@@ -57,10 +58,22 @@ func NewServerConnection(shared bool) sputnik.ServerConnection {
 		return nil
 	}
 
-	nonshared := scn.(*natsConnection)
-	nonshared.shared = shared
+	nonshared := scn.(*NatsConnection)
+	nonshared.Shared = Shared
 
 	return nonshared
+}
+
+func CloseServerConnection(sconn sputnik.ServerConnection) {
+	if sconn == nil {
+		return
+	}
+	sc := sconn.(*NatsConnection)
+
+	if sc.NatsConn != nil {
+		sc.NatsConn.Close()
+	}
+	return
 }
 
 var _ sputnik.BlockCommunicator = &dumbCommunicator{}
@@ -70,7 +83,7 @@ type dumbCommunicator struct {
 }
 
 func newCommunicator() *dumbCommunicator {
-	return &dumbCommunicator{msgs: make(chan sputnik.Msg, 1)}
+	return &dumbCommunicator{msgs: make(chan sputnik.Msg, 3)}
 }
 
 func (c *dumbCommunicator) Communicator(resp string) (bc sputnik.BlockCommunicator, exists bool) {
@@ -80,7 +93,17 @@ func (c *dumbCommunicator) Communicator(resp string) (bc sputnik.BlockCommunicat
 func (c *dumbCommunicator) Descriptor() sputnik.BlockDescriptor {
 	return sputnik.BlockDescriptor{}
 }
+
 func (c *dumbCommunicator) Send(msg sputnik.Msg) bool {
 	c.msgs <- msg
 	return true
+}
+
+func (c *dumbCommunicator) Recv() sputnik.Msg {
+	select {
+	case msg := <-c.msgs:
+		return msg
+	case <-time.After(10 * time.Second):
+		return nil
+	}
 }
