@@ -64,8 +64,8 @@ type dumbCommunicator struct {
 	msgs chan sputnik.Msg
 }
 
-func newCommunicator() *dumbCommunicator {
-	return &dumbCommunicator{msgs: make(chan sputnik.Msg, 3)}
+func newCommunicator(maxMsgs int) *dumbCommunicator {
+	return &dumbCommunicator{msgs: make(chan sputnik.Msg, maxMsgs+2)}
 }
 
 func (c *dumbCommunicator) Communicator(resp string) (bc sputnik.BlockCommunicator, exists bool) {
@@ -81,11 +81,11 @@ func (c *dumbCommunicator) Send(msg sputnik.Msg) bool {
 	return true
 }
 
-func (c *dumbCommunicator) Recv() sputnik.Msg {
+func (c *dumbCommunicator) Recv(to time.Duration) sputnik.Msg {
 	select {
 	case msg := <-c.msgs:
 		return msg
-	case <-time.After(10 * time.Second):
+	case <-time.After(to):
 		return nil
 	}
 }

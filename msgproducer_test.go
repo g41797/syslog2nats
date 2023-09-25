@@ -17,6 +17,8 @@ func TestProduceConsume(t *testing.T) {
 	servconn := NewServerConnection(true)
 	defer CloseServerConnection(servconn)
 
+	maxMessages := 1000000
+
 	var mc msgConsumer
 	err := mc.Connect(ConfFact(), servconn)
 	if err != nil {
@@ -24,63 +26,80 @@ func TestProduceConsume(t *testing.T) {
 	}
 	defer mc.Disconnect()
 
-	comm := newCommunicator()
+	comm := newCommunicator(maxMessages)
 
 	err = mc.Consume(comm)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	start := comm.Recv()
+	start := comm.Recv(time.Second)
 	if start == nil {
 		t.Fatalf("wrong flow")
 	}
 
 	var mp msgProducer
-	err = mp.Connect(ConfFact(), servconn)
-	if err != nil {
-		t.Fatal(err)
+	merr := mp.Connect(ConfFact(), servconn)
+	if merr != nil {
+		t.Fatal(merr)
 	}
-
 	defer mp.Disconnect()
 
-	propname := "content"
-	propvalue := propname
+	go batchProduce(t, &mp, maxMessages)
 
-	pmsg := make(sputnik.Msg)
-	pmsg[propname] = propvalue
-
-	err = mp.Produce(pmsg)
-	if err != nil {
-		t.Fatal(err)
-	}
+	batchConsume(t, &mc, comm, maxMessages)
 
 	if !mp.waitAsyncProduce(time.Second) {
 		t.Fatalf("timeout of produce")
 	}
 
 	state := mc.StreamInfo().State
-	if state.Msgs != 1 {
-		t.Fatalf("Expected 1 message Actual %d", state.Msgs)
+	if state.Msgs != uint64(maxMessages) {
+		t.Fatalf("Expected %d messages Actual %d", maxMessages, state.Msgs)
 	}
+}
 
-	cmsg := comm.Recv()
-	if cmsg == nil {
-		t.Fatalf("consume failed")
+func batchProduce(t *testing.T, mp *msgProducer, count int) {
+	propname := "content"
+	propvalue := propname
+
+	for i := 0; i < count; i++ {
+		pmsg := make(sputnik.Msg)
+		pmsg[propname] = propvalue
+
+		err := mp.Produce(pmsg)
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
+}
 
-	actual, exist := cmsg[propname]
+func batchConsume(t *testing.T, mc *msgConsumer, comm *dumbCommunicator, count int) {
+	propname := "content"
+	propvalue := propname
 
-	if !exist {
-		t.Fatalf("message property does not exist")
-	}
+	for i := 0; i < count; i++ {
+		cmsg := comm.Recv(100 * time.Millisecond)
+		if cmsg == nil {
+			t.Fatalf("consume failed")
+		}
 
-	actualtext, ok := actual.(string)
-	if !ok {
-		t.Fatalf("message property is not text")
-	}
+		consumed, exist := cmsg["consumed"]
 
-	if actualtext != propvalue {
-		t.Fatalf("expected %s actual %s", propvalue, actualtext)
+		if !exist {
+			t.Fatalf("message property consumed does not exist")
+		}
+
+		consmap, _ := consumed.(map[string]string)
+
+		actualtext, ok := consmap[propname]
+
+		if !ok {
+			t.Fatalf("message property is not text")
+		}
+
+		if actualtext != propvalue {
+			t.Fatalf("expected %s actual %s", propvalue, actualtext)
+		}
 	}
 }

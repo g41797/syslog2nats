@@ -1,18 +1,18 @@
 [
   {
+    "Name": "syslogconsumer",
+    "Responsibility": "syslogconsumer"
+  },
+  {
     "Name": "syslogreceiver",
     "Responsibility": "syslogreceiver"
   },
   {
-    "Name": "syslogproducer",
-    "Responsibility": "syslogproducer"
-  },
- {
     "Name": "syslogclient",
     "Responsibility": "syslogclient"
   },
   {
-    "Name": "syslogconsumer",
-    "Responsibility": "syslogconsumer"
+    "Name": "syslogproducer",
+    "Responsibility": "syslogproducer"
   }
 ]

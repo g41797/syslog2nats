@@ -50,7 +50,12 @@ func (mcn *msgConsumer) Connect(cf sputnik.ConfFactory, Shared sputnik.ServerCon
 		return err
 	}
 
-	mcn.cons, err = js.CreateOrUpdateConsumer(ctx, mcn.conf.STREAM, jetstream.ConsumerConfig{})
+	mcn.stream.Purge(ctx)
+
+	mcn.cons, err = js.CreateOrUpdateConsumer(ctx, mcn.conf.STREAM, jetstream.ConsumerConfig{
+		HeadersOnly: true,
+	})
+
 	if err != nil {
 		return err
 	}
@@ -130,13 +135,18 @@ func ConvertConsumeMsg(inmsg jetstream.Msg) sputnik.Msg {
 		return nil
 	}
 
-	omsg := make(sputnik.Msg)
+	props := make(map[string]string)
 
 	for k, v := range headers {
-		omsg[k] = v[0]
+		props[k] = v[0]
 	}
 
-	return omsg
+	smsg := sputnik.Msg{}
+	smsg["name"] = "consumed"
+	smsg["consumed"] = props
+	smsg["data"] = ""
+
+	return smsg
 }
 
 func (cons *msgConsumer) startTest() {
