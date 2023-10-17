@@ -5,9 +5,9 @@ Example of using [syslogsidecar](https://github.com/g41797/syslogsidecar#readme)
 ## Plugins
 
   In order to supply NATS specific functionality, 3 plugins to syslogsidecar were developed:
-  - connector
-  - producer
-  - consumer (used for the tests)
+  - [connector](https://github.com/g41797/syslog2nats/blob/main/connector.go)
+  - [producer](https://github.com/g41797/syslog2nats/blob/main/msgproducer.go)
+  - [consumer](https://github.com/g41797/syslog2nats/blob/main/msgconsumer.go) (used for the tests)
 
 
 ### Connector
