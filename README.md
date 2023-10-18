@@ -2,7 +2,7 @@
 
 Collects syslog messages and publishs them to [NATS](https://nats.io) 
 
-syslog2nats based on 
+syslog2nats is based on 
 - [syslogsidecar](https://github.com/g41797/syslogsidecar#readme)
 - [sputnik](https://github.com/g41797/sputnik)
 
