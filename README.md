@@ -78,7 +78,7 @@ all messages with severity above 4 will be discarded.
 
   ### Configuration
 
-  Configuration of receiver part of syslogsidecar is saved in the file syslogreceiver.json:
+  Configuration of syslog server part of syslogsidecar is saved in the file syslogreceiver.json:
 ```json
 {
     "SEVERITYLEVEL": 4,
