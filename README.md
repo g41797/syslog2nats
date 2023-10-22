@@ -1,6 +1,6 @@
 # syslog2nats [![Go](https://github.com/g41797/syslog2nats/actions/workflows/go.yml/badge.svg)](https://github.com/g41797/syslog2nats/actions/workflows/go.yml)
 
-Collects syslog messages and publishs them to [NATS](https://nats.io) 
+Receives syslog messages and publishs them to [NATS](https://nats.io) 
 
 syslog2nats is based on 
 - [syslogsidecar](https://github.com/g41797/syslogsidecar#readme)
