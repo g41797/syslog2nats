@@ -4,7 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/g41797/sputnik"
+	"github.com/g41797/syslogsidecar"
+	_ "github.com/g41797/syslogsidecar"
 )
 
 func TestProduceConsume(t *testing.T) {
@@ -60,22 +61,28 @@ func TestProduceConsume(t *testing.T) {
 }
 
 func batchProduce(t *testing.T, mp *msgProducer, count int) {
-	propname := "content"
-	propvalue := propname
+	badmsg := map[string]string{
+		syslogsidecar.Formermessage: syslogsidecar.Formermessage}
 
 	for i := 0; i < count; i++ {
-		pmsg := make(sputnik.Msg)
-		pmsg[propname] = propvalue
+		pmsg := syslogsidecar.Get()
 
-		err := mp.Produce(pmsg)
+		err := syslogsidecar.Pack(pmsg, badmsg)
 		if err != nil {
-			t.Fatal(err)
+			t.Error(err)
+			return
+		}
+
+		err = mp.Produce(pmsg)
+		if err != nil {
+			t.Error(err)
+			return
 		}
 	}
 }
 
 func batchConsume(t *testing.T, mc *msgConsumer, comm *dumbCommunicator, count int) {
-	propname := "content"
+	propname := syslogsidecar.Formermessage
 	propvalue := propname
 
 	for i := 0; i < count; i++ {

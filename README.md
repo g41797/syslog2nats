@@ -41,17 +41,16 @@ syslog2nats consists of:
  - structured_data
  - **message**
 
-  ### Non-RFC parts
+### Non-RFC parts
 
-  syslogsidecar adds following parts to standard ones:
-  - rfc of produced message:
-    - Part name: "rfc"
-    - Values: "RFC3164"|"RFC5424"
-  - former syslog message:
-    - Part name: "data"
-  - parsing error (optional):
-    - Part name: "parsererror"
+  syslogsidecar adds rfc of produced message:
+  - Part name: "rfc"
+  - Values: "RFC3164"|"RFC5424"
 
+### Badly formatted messages
+
+  syslogsidecar creates only one part for badly formatted message - former syslog message:
+  - Part name: "data"
       
 ### Severities
 
@@ -142,13 +141,12 @@ syslog messages are produced to jetstream as *Header* with _*empty payload*_:
 		Header:  make(nats.Header),
 	}
 
-	for k, v := range inmsg {
-		vstr, ok := v.(string)
-		if !ok {
-			continue
-		}
-		msg.Header.Add(k, vstr)
+	putToheader := func(name string, value string) error {
+		msg.Header.Add(name, value)
+		return nil
 	}
+
+	syslogsidecar.Unpack(inmsg, putToheader)
     .................................
 ```
 
@@ -178,7 +176,4 @@ go build ./cmd/syslog-e2e/
 ./syslog-e2e -cf ./cmd/syslog-e2e/conf/
 ```
 nats server runs as embedded within syslog-e2e process.
-
-Report:
-20.59306566s   Was send 1000000 messages. Successfully consumed 1000000 Received 1000000
 

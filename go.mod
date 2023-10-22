@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/g41797/sputnik v0.0.17
-	github.com/g41797/syslogsidecar v0.0.17
+	github.com/g41797/syslogsidecar v0.0.18
 	github.com/nats-io/nats-server/v2 v2.10.1
 	github.com/nats-io/nats.go v1.30.0
 )

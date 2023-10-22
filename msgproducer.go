@@ -80,6 +80,8 @@ func (mpr *msgProducer) Disconnect() {
 
 func (mpr *msgProducer) Produce(msg sputnik.Msg) error {
 
+	defer syslogsidecar.Put(msg)
+
 	if mpr.sc == nil {
 		return fmt.Errorf("connection with broker does not exist")
 	}
@@ -127,13 +129,12 @@ func ConvertProduceMsg(name string, inmsg sputnik.Msg) *nats.Msg {
 		return msg
 	}
 
-	for k, v := range inmsg {
-		vstr, ok := v.(string)
-		if !ok {
-			continue
-		}
-		msg.Header.Add(k, vstr)
+	putToheader := func(name string, value string) error {
+		msg.Header.Add(name, value)
+		return nil
 	}
+
+	syslogsidecar.Unpack(inmsg, putToheader)
 
 	return msg
 }
