@@ -157,7 +157,7 @@ see also [Advanced configuration and helper functions for producer](https://gith
 ```bash
 go clean -cache -testcache
 go build ./cmd/syslog2nats/
-./syslog2nats -cf ./cmd/syslog2nats/conf/
+./syslog2nats --cf ./cmd/syslog2nats/conf/
 ```
 
 ## e2e test
