@@ -1,6 +1,8 @@
 package main
 
 import (
+	"embed"
+
 	"github.com/g41797/sputnik/sidecar"
 	"github.com/g41797/syslog2nats"
 
@@ -11,6 +13,9 @@ import (
 	_ "github.com/g41797/syslogsidecar/e2e"
 )
 
+//go:embed conf
+var embconf embed.FS
+
 func main() {
 
 	srv := syslog2nats.RunBasicJetStreamServer(syslog2nats.NATSPORT)
@@ -19,5 +24,7 @@ func main() {
 	}
 	defer syslog2nats.ShutdownJSServerAndRemoveStorage(srv)
 
+	cleanUp, _ := sidecar.UseEmbeddedConfiguration(&embconf)
+	defer cleanUp()
 	sidecar.Start(syslog2nats.NewConnector())
 }

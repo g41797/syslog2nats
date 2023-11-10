@@ -150,6 +150,8 @@ syslog messages are produced to jetstream as *Header* with _*empty payload*_:
     .................................
 ```
 
+see also [Advanced configuration and helper functions for producer](https://github.com/g41797/syslogsidecar#advanced-configuration-and-helper-functions-for-producer)
+
 ## Build and run under vscode
 
 ```bash
@@ -173,7 +175,34 @@ Build and run under vscode:
 ```bash
 go clean -cache -testcache
 go build ./cmd/syslog-e2e/
-./syslog-e2e -cf ./cmd/syslog-e2e/conf/
+./syslog-e2e 
 ```
-nats server runs as embedded within syslog-e2e process.
+nats server runs as as part of syslog-e2e process.
+
+## Embedding configuration files
+
+syslog-e2e uses embedded configuration files:
+```go
+import (
+	"embed"
+  .........
+)
+
+//go:embed conf
+var embconf embed.FS
+
+func main() {
+  ............................
+  ............................
+	cleanUp, _ := sidecar.UseEmbeddedConfiguration(&embconf)
+	defer cleanUp()
+	sidecar.Start(syslog2nats.NewConnector())
+}
+
+```
+For this case content of **conf** subfolder embedded within process.
+No needs for "--cf" flag in command line.
+
+Any value in configuration file may be [overridden using environment variables](https://github.com/g41797/gonfig#gonfig-)
+
 
